@@ -2,15 +2,26 @@
 """
 GLSFS Sandbox Executor
 
-Executes commands safely in Docker or locally with path translation.
+SMART PATH HANDLING:
+====================
+The executor normalizes paths only when necessary:
 
-PATH NORMALIZATION (Defense in Depth):
-=====================================
-Even if the model outputs incorrect paths, this executor normalizes them
-right before execution as a safety net:
-  - desktop -> /home/user/Desktop
-  - Documents/ -> /home/user/Documents/
-  - ~/Downloads -> /home/user/Downloads
+CONVERTS (would fail otherwise):
+  - "ls documents/"      → "ls /home/user/Documents/"    (case sensitivity)
+  - "cat Desktop/f.txt"  → "cat /home/user/Desktop/f.txt" (relative path)
+  - "~/Downloads"        → "/home/user/Downloads"         (tilde expansion)
+
+LEAVES ALONE (already works):
+  - "find . -name '*.pdf'"           (searches from /home/user)
+  - "ls"                              (lists /home/user)
+  - "find . -path '*/Documents/*'"   (pattern matching)
+  - "du -sh *"                        (glob expansion)
+
+Docker working directory is /home/user, which contains:
+  - Desktop/    (mounted from ~/Desktop)
+  - Documents/  (mounted from ~/Documents)
+  - Downloads/  (mounted from ~/Downloads)
+  - workspace/  (mounted from ~/glsfs/data/workspace)
 """
 
 import docker
@@ -50,12 +61,12 @@ class SandboxExecutor:
             '/home/user': self.home,
         }
         
-        # Docker path normalization mapping (case-insensitive folder -> correct path)
-        self.docker_folder_mapping = {
-            'desktop': '/home/user/Desktop',
-            'documents': '/home/user/Documents',
-            'downloads': '/home/user/Downloads',
-            'workspace': '/home/user/workspace',
+        # Canonical folder names (for case correction)
+        self.canonical_folders = {
+            'desktop': 'Desktop',
+            'documents': 'Documents', 
+            'downloads': 'Downloads',
+            'workspace': 'workspace',
         }
         
         # Verify Mac folders
@@ -177,84 +188,137 @@ class SandboxExecutor:
             else:
                 print(f"   ⚠️  {name} mount issue")
     
-    def _normalize_command_for_docker(self, command):
+    def _smart_normalize_command(self, command):
         """
-        Normalize paths in command to correct Docker paths.
+        Smart path normalization - only fix what needs fixing.
         
-        This is a SAFETY NET - catches any paths the model didn't normalize:
-          - desktop -> /home/user/Desktop
-          - documents/ -> /home/user/Documents/
-          - Documents -> /home/user/Documents
-          - ~/Desktop -> /home/user/Desktop
+        FIXES:
+          1. Tilde expansion: ~/Documents → /home/user/Documents
+          2. $HOME expansion: $HOME/Desktop → /home/user/Desktop
+          3. Case correction: documents/ → Documents/
+          4. Bare folder access: ls documents → ls Documents
+          
+        LEAVES ALONE:
+          - find . (works fine from /home/user)
+          - Glob patterns like *
+          - Already correct paths
         """
         if not command:
             return command
         
         result = command
         
-        # Step 1: Handle ~ and $HOME
+        # 1. Expand ~ to /home/user (tilde doesn't work in Docker)
         result = result.replace('~/', '/home/user/')
         result = re.sub(r'~(?=\s|$)', '/home/user', result)
+        
+        # 2. Expand $HOME
         result = result.replace('$HOME/', '/home/user/')
         result = result.replace('${HOME}/', '/home/user/')
         result = re.sub(r'\$HOME(?=\s|$)', '/home/user', result)
         result = re.sub(r'\$\{HOME\}(?=\s|$)', '/home/user', result)
         
-        # Step 2: Normalize folder names (case-insensitive)
-        # Process the command to find and replace folder references
-        result = self._replace_folder_references(result)
+        # 3. Fix case sensitivity for folder names
+        # Linux is case-sensitive, so "documents" won't find "Documents"
+        result = self._fix_folder_case(result)
         
         return result
     
-    def _replace_folder_references(self, command):
+    def _fix_folder_case(self, command):
         """
-        Find and replace folder references in a command.
+        Fix case sensitivity issues for folder names.
         
-        Handles:
-          - Bare names: desktop, Documents, DOWNLOADS
-          - With trailing slash: desktop/, Documents/
-          - With subpath: desktop/file.txt, Documents/subdir/
-          - Already partially correct: /home/user/documents
+        Converts:
+          - documents → Documents
+          - desktop → Desktop  
+          - downloads → Downloads
+          
+        But only when it's clearly a path reference, not part of a pattern.
         """
-        # Pattern to match folder references
-        # This regex finds word boundaries and matches folder names
+        result = command
         
-        for folder_lower, correct_path in self.docker_folder_mapping.items():
-            # Pattern 1: Already in /home/user/ but wrong case
-            # /home/user/documents -> /home/user/Documents
-            pattern = rf'/home/user/{folder_lower}(?=/|$|\s)'
-            replacement = correct_path
-            command = re.sub(pattern, replacement, command, flags=re.IGNORECASE)
-            
-            # Pattern 2: Bare folder name or folder/ at word boundary (not already with /home/user)
-            # This handles: "ls desktop", "find documents/", "cat Desktop/file.txt"
-            # But NOT: "/home/user/Desktop" (already handled above)
-            
-            # Match folder name at word boundary, not preceded by /user/
-            # (?<!...) is negative lookbehind
-            pattern = rf'(?<!/user/)(?<![/\w])({folder_lower})(/[^\s]*)?(?=\s|$|[|;&])'
-            
-            def replace_match(m):
-                folder_match = m.group(1)
-                path_suffix = m.group(2) or ''
-                return correct_path + path_suffix
-            
-            command = re.sub(pattern, replace_match, command, flags=re.IGNORECASE)
+        for wrong_case, correct_case in self.canonical_folders.items():
+            if wrong_case == correct_case.lower():
+                # Skip if already correct case
+                if wrong_case == correct_case:
+                    continue
+                
+                # Pattern 1: In /home/user/documents → /home/user/Documents
+                pattern = rf'(/home/user/){wrong_case}(?=/|$|\s)'
+                result = re.sub(pattern, rf'\1{correct_case}', result, flags=re.IGNORECASE)
+                
+                # Pattern 2: Bare folder or folder/ at start of a path argument
+                # Match: "ls documents" or "ls documents/" or "cat documents/file.txt"
+                # Don't match: "find . -path '*/Documents/*'" (pattern in quotes - already works)
+                
+                # This regex finds folder names that are command arguments (after space, not in quotes)
+                # We only fix obvious cases where the folder is a direct argument
+                
+                # Case: "ls documents" or "cat documents/file.txt"
+                # But NOT: "'*/documents/*'" (inside quotes for pattern matching)
+                pattern = rf"(?<=['\"*/]){wrong_case}(?=['\"*/])"  # Inside quotes/patterns - skip
+                
+                # Fix bare folder references that aren't in quotes
+                # This handles: ls documents, cat desktop/file.txt
+                tokens = self._tokenize_preserving_quotes(result)
+                fixed_tokens = []
+                
+                for token in tokens:
+                    # Skip if token is quoted (pattern matching)
+                    if token.startswith("'") or token.startswith('"'):
+                        fixed_tokens.append(token)
+                        continue
+                    
+                    # Fix case for this specific folder
+                    if token.lower() == wrong_case:
+                        fixed_tokens.append(correct_case)
+                    elif token.lower().startswith(wrong_case + '/'):
+                        fixed_tokens.append(correct_case + token[len(wrong_case):])
+                    else:
+                        fixed_tokens.append(token)
+                
+                result = ' '.join(fixed_tokens)
         
-        return command
+        return result
+    
+    def _tokenize_preserving_quotes(self, command):
+        """Split command into tokens, keeping quoted strings together."""
+        tokens = []
+        current = ""
+        in_quote = None
+        
+        for char in command:
+            if char in '"\'':
+                if in_quote == char:
+                    current += char
+                    in_quote = None
+                elif in_quote is None:
+                    in_quote = char
+                    current += char
+                else:
+                    current += char
+            elif char == ' ' and in_quote is None:
+                if current:
+                    tokens.append(current)
+                    current = ""
+            else:
+                current += char
+        
+        if current:
+            tokens.append(current)
+        
+        return tokens
     
     def execute(self, command, timeout=30):
         """
-        Execute a command.
-        
-        Normalizes paths first, then executes in Docker or locally.
+        Execute a command with smart path normalization.
         """
-        # CRITICAL: Normalize paths before execution
-        normalized_command = self._normalize_command_for_docker(command)
+        # Smart normalize - only fix what needs fixing
+        normalized_command = self._smart_normalize_command(command)
         
         if normalized_command != command:
-            print(f"   📍 Path normalized: {command}")
-            print(f"   📍 Executing: {normalized_command}")
+            print(f"   📍 Normalized: {command}")
+            print(f"   📍 To: {normalized_command}")
         
         if self.use_docker:
             return self._execute_docker(normalized_command, timeout)
@@ -302,11 +366,7 @@ class SandboxExecutor:
             return self._execute_local(command, timeout)
     
     def _translate_path_for_local(self, command):
-        """
-        Translate Docker paths to Mac paths for local execution.
-        
-        /home/user/Desktop -> /Users/yourname/Desktop
-        """
+        """Translate Docker paths to Mac paths for local execution."""
         result = command
         
         sorted_mappings = sorted(

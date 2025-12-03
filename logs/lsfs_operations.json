@@ -4216,5 +4216,665 @@
       "execution_method": "docker"
     },
     "status": "completed"
+  },
+  {
+    "query": "list all files in Desktop",
+    "timestamp": "2025-12-03T10:42:43.259326",
+    "steps": [
+      {
+        "step": "command_generation",
+        "result": "ls -la /home/user/Desktop/",
+        "time": 4.2931718826293945
+      }
+    ],
+    "generated_command": "ls -la /home/user/Desktop/",
+    "explanation": "This lists all files in the Desktop directory.",
+    "generation_time": 4.2931718826293945,
+    "safety_check": {
+      "is_safe": true,
+      "warnings": [],
+      "sanitized_command": "ls -la /home/user/Desktop/",
+      "time": 0.0008730888366699219
+    },
+    "final_command": "ls -la /home/user/Desktop/",
+    "execution": {
+      "status": "success",
+      "exit_code": 0,
+      "stdout": "total 252\ndrwx------ 5 root root    160 Oct 31 21:19 .\ndrwxr-x--- 1 user user   4096 Dec  3 06:10 ..\n-rw-r--r-- 1 root root   6148 Oct 31 21:19 .DS_Store\n-rw-r--r-- 1 root root      0 Sep 12 16:56 .localized\n-rw-r--r-- 1 root root 243746 Oct 31 21:19 Screenshot 2025-10-31 at 4.19.54\u202fPM.png\n",
+      "stderr": "",
+      "command": "ls -la /home/user/Desktop/",
+      "timestamp": "2025-12-03T10:42:47.701387",
+      "execution_method": "docker"
+    },
+    "execution_time": 0.14787983894348145,
+    "status": "completed",
+    "total_time": 4.442171096801758
+  },
+  {
+    "query": "How many PDF files do I have in Documents",
+    "timestamp": "2025-12-03T10:43:49.334069",
+    "steps": [
+      {
+        "step": "command_generation",
+        "result": "ls Documents/*.pdf",
+        "time": 3.5147571563720703
+      }
+    ],
+    "generated_command": "ls Documents/*.pdf",
+    "explanation": "This lists all PDF files.",
+    "generation_time": 3.5147571563720703,
+    "safety_check": {
+      "is_safe": true,
+      "warnings": [],
+      "sanitized_command": "ls Documents/*.pdf",
+      "time": 0.000125885009765625
+    },
+    "final_command": "ls Documents/*.pdf",
+    "execution": {
+      "status": "error",
+      "exit_code": 2,
+      "stdout": "",
+      "stderr": "ls: cannot access 'Documents/*.pdf': No such file or directory\n",
+      "command": "ls Documents/*.pdf",
+      "timestamp": "2025-12-03T10:43:52.982833",
+      "execution_method": "docker"
+    },
+    "execution_time": 0.13364410400390625,
+    "status": "completed",
+    "total_time": 3.6488020420074463
+  },
+  {
+    "query": "How many PDF files do I have in Documents",
+    "timestamp": "2025-12-03T10:44:03.992954",
+    "steps": [
+      {
+        "step": "command_generation",
+        "result": "ls Documents/*.pdf",
+        "time": 1.6868259906768799
+      }
+    ],
+    "generated_command": "ls Documents/*.pdf",
+    "explanation": "This lists all PDF files.",
+    "generation_time": 1.6868259906768799,
+    "safety_check": {
+      "is_safe": true,
+      "warnings": [],
+      "sanitized_command": "ls Documents/*.pdf",
+      "time": 2.384185791015625e-05
+    },
+    "final_command": "ls Documents/*.pdf",
+    "execution": {
+      "status": "error",
+      "exit_code": 2,
+      "stdout": "",
+      "stderr": "ls: cannot access 'Documents/*.pdf': No such file or directory\n",
+      "command": "ls Documents/*.pdf",
+      "timestamp": "2025-12-03T10:44:05.777532",
+      "execution_method": "docker"
+    },
+    "execution_time": 0.09766602516174316,
+    "status": "completed",
+    "total_time": 1.7846248149871826
+  },
+  {
+    "query": "Find all Python files in Documents",
+    "timestamp": "2025-12-03T10:44:37.167621",
+    "steps": [
+      {
+        "step": "command_generation",
+        "result": "find Documents -name '*.py'",
+        "time": 4.039067029953003
+      }
+    ],
+    "generated_command": "find Documents -name '*.py'",
+    "explanation": "This finds all Python files.",
+    "generation_time": 4.039067029953003,
+    "safety_check": {
+      "is_safe": true,
+      "warnings": [],
+      "sanitized_command": "find Documents -name '*.py'",
+      "time": 0.0002980232238769531
+    },
+    "final_command": "find Documents -name '*.py'",
+    "execution": {
+      "status": "success",
+      "exit_code": 0,
+      "stdout": "Documents/Blockchain/MEMO-coin/analysis/analysis.py\nDocuments/Blockchain/alpaca/python/pybind11/tools/libsize.py\nDocuments/Blockchain/alpaca/python/pybind11/tools/make_changelog.py\nDocuments/Blockchain/alpaca/python/pybind11/tools/codespell_ignore_lines_from_errors.py\nDocuments/Blockchain/alpaca/python/pybind11/pybind11/setup_helpers.py\nDocuments/Blockchain/alpaca/python/pybind11/pybind11/_version.py\nDocuments/Blockchain/alpaca/python/pybind11/pybind11/__init__.py\nDocuments/Blockchain/alpaca/python/pybind11/pybind11/commands.py\nDocuments/Blockchain/alpaca/python/pybind11/pybind11/__main__.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_stl_binders.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_methods_and_attributes.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_sequences_and_iterators.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_numpy_vectorize.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_chrono.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/conftest.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_callbacks.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_embed/test_trampoline.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_embed/test_interpreter.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_pytypes.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_class.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/env.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_docstring_options.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_async.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_local_bindings.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_smart_ptr.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_numpy_array.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_builtin_casters.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_constants_and_functions.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_eigen.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_exceptions.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_factory_constructors.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_iostream.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_operator_overloading.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_union.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_kwargs_and_defaults.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_cmake_build/test.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/extra_setuptools/test_setuphelper.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_thread.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_pickling.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_copy_move.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_eval_call.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_custom_type_casters.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_stl.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_numpy_dtypes.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/extra_python_package/test_files.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_opaque_types.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_virtual_functions.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_const_name.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_call_policies.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_custom_type_setup.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_buffers.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_modules.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_gil_scoped.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_multiple_inheritance.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_tagbased_polymorphic.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_eval.py\nDocuments/Blockchain/alpaca/python/pybind11/tests/test_enum.py\nDocuments/Blockchain/alpaca/python/pybind11/docs/benchmark.py\nDocuments/Blockchain/alpaca/python/pybind11/docs/conf.py\nDocuments/Blockchain/alpaca/python/pybind11/setup.py\nDocuments/Blockchain/alpaca/python/pybind11/noxfile.py\nDocuments/Blockchain/alpaca/samples/pyalpaca_demo.py\nDocuments/Blockchain/yaml-cpp/test/create-emitter-tests.py\nDocuments/Blockchain/yaml-cpp/test/googletest-1.13.0/googletest/test/gtest_xml_output_unittest.py\nDocuments/Blockchain/yaml-cpp/test/googletest-1.13.0/googletest/test/googletest-output-test.py\nDocuments/Blockchain/yaml-cpp/test/googletest-1.13.0/googletest/test/googletest-param-test-invalid-name1-test.py\nDocuments/Blockchain/yaml-cpp/test/googletest-1.13.0/googletest/test/gtest_help_test.py\nDocuments/Blockchain/yaml-cpp/test/googletest-1.13.0/googletest/test/googletest-global-environment-unittest.py\nDocuments/Blockchain/yaml-cpp/test/googletest-1.13.0/googletest/test/gtest_test_utils.py\nDocuments/Blockchain/yaml-cpp/test/googletest-1.13.0/googletest/test/gtest_json_test_utils.py\nDocuments/Blockchain/yaml-cpp/test/googletest-1.13.0/googletest/test/googletest-param-test-invalid-name2-test.py\nDocuments/Blockchain/yaml-cpp/test/googletest-1.13.0/googletest/test/googletest-json-output-unittest.py\nDocuments/Blockchain/yaml-cpp/test/googletest-1.13.0/googletest/test/googletest-break-on-failure-unittest.py\nDocuments/Blockchain/yaml-cpp/test/googletest-1.13.0/googletest/test/googletest-setuptestsuite-test.py\nDocuments/Blockchain/yaml-cpp/test/googletest-1.13.0/googletest/test/googletest-list-tests-unittest.py\nDocuments/Blockchain/yaml-cpp/test/googletest-1.13.0/googletest/test/googletest-env-var-test.py\nDocuments/Blockchain/yaml-cpp/test/googletest-1.13.0/googletest/test/gtest_xml_outfiles_test.py\nDocuments/Blockchain/yaml-cpp/test/googletest-1.13.0/googletest/test/gtest_list_output_unittest.py\nDocuments/Blockchain/yaml-cpp/test/googletest-1.13.0/googletest/test/gtest_xml_test_utils.py\nDocuments/Blockchain/yaml-cpp/test/googletest-1.13.0/googletest/test/googletest-color-test.py\nDocuments/Blockchain/yaml-cpp/test/googletest-1.13.0/googletest/test/googletest-filter-unittest.py\nDocuments/Blockchain/yaml-cpp/test/googletest-1.13.0/googletest/test/gtest_skip_check_output_test.py\nDocuments/Blockchain/yaml-cpp/test/googletest-1.13.0/googletest/test/gtest_testbridge_test.py\nDocuments/Blockchain/yaml-cpp/test/googletest-1.13.0/googletest/test/googletest-throw-on-failure-test.py\nDocuments/Blockchain/yaml-cpp/test/googletest-1.13.0/googletest/test/googletest-shuffle-test.py\nDocuments/Blockchain/yaml-cpp/test/googletest-1.13.0/googletest/test/googletest-uninitialized-test.py\nDocuments/Blockchain/yaml-cpp/test/googletest-1.13.0/googletest/test/googletest-catch-exceptions-test.py\nDocuments/Blockchain/yaml-cpp/test/googletest-1.13.0/googletest/test/googletest-json-outfiles-test.py\nDocuments/Blockchain/yaml-cpp/test/googletest-1.13.0/googletest/test/gtest_skip_environment_check_output_test.py\nDocuments/Blockchain/yaml-cpp/test/googletest-1.13.0/googletest/test/googletest-failfast-unittest.py\nDocuments/Blockchain/yaml-cpp/test/googletest-1.13.0/googlemock/test/gmock_leak_test.py\nDocuments/Blockchain/yaml-cpp/test/googletest-1.13.0/googlemock/test/gmock_test_utils.py\nDocuments/Blockchain/yaml-cpp/test/googletest-1.13.0/googlemock/test/gmock_output_test.py\nDocuments/Blockchain/libzmq/perf/generate_graphs.py\nDocuments/Blockchain/cppzmq/build/_deps/catch2-src/tools/misc/appveyorMergeCoverageScript.py\nDocuments/Blockchain/cppzmq/build/_deps/catch2-src/tools/scripts/scriptCommon.py\nDocuments/Blockchain/cppzmq/build/_deps/catch2-src/tools/scripts/approve.py\nDocuments/Blockchain/cppzmq/build/_deps/catch2-src/tools/scripts/checkLicense.py\nDocuments/Blockchain/cppzmq/build/_deps/catch2-src/tools/scripts/developBuild.py\nDocuments/Blockchain/cppzmq/build/_deps/catch2-src/tools/scripts/extractFeaturesFromReleaseNotes.py\nDocuments/Blockchain/cppzmq/build/_deps/catch2-src/tools/scripts/updateDocumentSnippets.py\nDocuments/Blockchain/cppzmq/build/_deps/catch2-src/tools/scripts/generateAmalgamatedFiles.py\nDocuments/Blockchain/cppzmq/build/_deps/catch2-src/tools/scripts/checkDuplicateFilenames.py\nDocuments/Blockchain/cppzmq/build/_deps/catch2-src/tools/scripts/fixWhitespace.py\nDocuments/Blockchain/cppzmq/build/_deps/catch2-src/tools/scripts/releaseCommon.py\nDocuments/Blockchain/cppzmq/build/_deps/catch2-src/tools/scripts/approvalTests.py\nDocuments/Blockchain/cppzmq/build/_deps/catch2-src/tools/scripts/majorRelease.py\nDocuments/Blockchain/cppzmq/build/_deps/catch2-src/tools/scripts/checkConvenienceHeaders.py\nDocuments/Blockchain/cppzmq/build/_deps/catch2-src/tools/scripts/minorRelease.py\nDocuments/Blockchain/cppzmq/build/_deps/catch2-src/tools/scripts/patchRelease.py\nDocuments/Blockchain/cppzmq/build/_deps/catch2-src/tools/scripts/updateDocumentToC.py\nDocuments/Blockchain/cppzmq/build/_deps/catch2-src/conanfile.py\nDocuments/Blockchain/cppzmq/build/_deps/catch2-src/tests/TestScripts/testSharding.py\nDocuments/Blockchain/cppzmq/build/_deps/catch2-src/tests/TestScripts/ConfigureTestsCommon.py\nDocuments/Blockchain/cppzmq/build/_deps/catch2-src/tests/TestScripts/testRandomOrder.py\nDocuments/Blockchain/cppzmq/build/_deps/catch2-src/tests/TestScripts/testConfigureExperimentalRedirect.py\nDocuments/Blockchain/cppzmq/build/_deps/catch2-src/tests/TestScripts/testConfigureDisable.py\nDocuments/Blockchain/cppzmq/build/_deps/catch2-src/tests/TestScripts/testBazelSharding.py\nDocuments/Blockchain/cppzmq/build/_deps/catch2-src/tests/TestScripts/testConfigureDefaultReporter.py\nDocuments/Blockchain/cppzmq/build/_deps/catch2-src/tests/TestScripts/testConfigureDisableStringification.py\nDocuments/Blockchain/cppzmq/build/_deps/catch2-src/tests/TestScripts/DiscoverTests/VerifyRegistration.py\nDocuments/Blockchain/cppzmq/build/_deps/catch2-src/tests/TestScripts/testBazelReporter.py\nDocuments/Blockchain/cppzmq/build/_deps/catch2-src/tests/TestScripts/testPartialTestCaseEvent.py\nDocuments/Blockchain/cppzmq/build/_deps/catch2-src/.conan/build.py\nDocuments/Blockchain/cppzmq/build/_deps/catch2-src/.conan/test_package/conanfile.py\nDocuments/python_codes/new_dataset_generator.py\nDocuments/python_codes/gsfs_dataset_genrator.py\nDocuments/python_codes/balanced_dataset_generator.py\nDocuments/python_codes/datset_generator.py\n",
+      "stderr": "",
+      "command": "find Documents -name '*.py'",
+      "timestamp": "2025-12-03T10:44:41.571411",
+      "execution_method": "docker"
+    },
+    "execution_time": 0.36425018310546875,
+    "status": "completed",
+    "total_time": 4.40391993522644
+  },
+  {
+    "query": "give me count of How many PDF files do I have in Documents",
+    "timestamp": "2025-12-03T10:46:44.521602",
+    "steps": [
+      {
+        "step": "command_generation",
+        "result": "ls -la Documents/ | grep -q '^\\.\\(pdf\\)$' && echo \"PDF files found\"",
+        "time": 9.967758893966675
+      }
+    ],
+    "generated_command": "ls -la Documents/ | grep -q '^\\.\\(pdf\\)$' && echo \"PDF files found\"",
+    "explanation": "This counts PDF files.",
+    "generation_time": 9.967758893966675,
+    "safety_check": {
+      "is_safe": true,
+      "warnings": [],
+      "sanitized_command": "ls -la Documents/ | grep -q '^\\.\\(pdf\\)$' && echo \"PDF files found\"",
+      "time": 0.00037097930908203125
+    },
+    "final_command": "ls -la Documents/ | grep -q '^\\.\\(pdf\\)$' && echo \"PDF files found\"",
+    "execution": {
+      "status": "error",
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "",
+      "command": "ls -la Documents/ | grep -q '^\\.\\(pdf\\)$' && echo \"PDF files found\"",
+      "timestamp": "2025-12-03T10:46:54.714899",
+      "execution_method": "docker"
+    },
+    "execution_time": 0.22452020645141602,
+    "status": "completed",
+    "total_time": 10.193382978439331
+  },
+  {
+    "query": "give me count of number of PDF files do I have in Documents",
+    "timestamp": "2025-12-03T10:57:12.508740",
+    "steps": [
+      {
+        "step": "command_generation",
+        "result": "find Documents -name '*.pdf' | wc -l",
+        "time": 11.27049207687378
+      }
+    ],
+    "generated_command": "find Documents -name '*.pdf' | wc -l",
+    "explanation": "This counts PDF files.",
+    "generation_time": 11.27049207687378,
+    "safety_check": {
+      "is_safe": true,
+      "warnings": [],
+      "sanitized_command": "find Documents -name '*.pdf' | wc -l",
+      "time": 0.0005469322204589844
+    },
+    "final_command": "find Documents -name '*.pdf' | wc -l",
+    "execution": {
+      "status": "success",
+      "exit_code": 0,
+      "stdout": "143\n",
+      "stderr": "",
+      "command": "find Documents -name '*.pdf' | wc -l",
+      "timestamp": "2025-12-03T10:57:24.174118",
+      "execution_method": "docker"
+    },
+    "execution_time": 0.39380383491516113,
+    "status": "completed",
+    "total_time": 11.665739059448242
+  },
+  {
+    "query": "Show me files larger than 10MB on Desktop",
+    "timestamp": "2025-12-03T10:58:06.713550",
+    "steps": [
+      {
+        "step": "command_generation",
+        "result": "du -sh /home/user/Desktop/*.pdf",
+        "time": 5.364531993865967
+      }
+    ],
+    "generated_command": "du -sh /home/user/Desktop/*.pdf",
+    "explanation": "This shows files larger than 10MB.",
+    "generation_time": 5.364531993865967,
+    "safety_check": {
+      "is_safe": true,
+      "warnings": [],
+      "sanitized_command": "du -sh /home/user/Desktop/*.pdf",
+      "time": 0.0002980232238769531
+    },
+    "final_command": "du -sh /home/user/Desktop/*.pdf",
+    "execution": {
+      "status": "error",
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "du: cannot access '/home/user/Desktop/*.pdf': No such file or directory\n",
+      "command": "du -sh /home/user/Desktop/*.pdf",
+      "timestamp": "2025-12-03T10:58:12.179446",
+      "execution_method": "docker"
+    },
+    "execution_time": 0.10086894035339355,
+    "status": "completed",
+    "total_time": 5.465929985046387
+  },
+  {
+    "query": "Show me files larger than 10MB on Desktop",
+    "timestamp": "2025-12-03T10:58:42.202103",
+    "steps": [
+      {
+        "step": "command_generation",
+        "result": "du -sh /home/user/Desktop/*.pdf",
+        "time": 3.4516520500183105
+      }
+    ],
+    "generated_command": "du -sh /home/user/Desktop/*.pdf",
+    "explanation": "This shows files larger than 10MB.",
+    "generation_time": 3.4516520500183105,
+    "safety_check": {
+      "is_safe": true,
+      "warnings": [],
+      "sanitized_command": "du -sh /home/user/Desktop/*.pdf",
+      "time": 0.00010395050048828125
+    },
+    "final_command": "du -sh /home/user/Desktop/*.pdf",
+    "execution": {
+      "status": "error",
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "du: cannot access '/home/user/Desktop/*.pdf': No such file or directory\n",
+      "command": "du -sh /home/user/Desktop/*.pdf",
+      "timestamp": "2025-12-03T10:58:45.790377",
+      "execution_method": "docker"
+    },
+    "execution_time": 0.13627290725708008,
+    "status": "completed",
+    "total_time": 3.588348865509033
+  },
+  {
+    "query": "Show me how many files are larger than 10MB on Desktop",
+    "timestamp": "2025-12-03T11:00:20.212187",
+    "steps": [
+      {
+        "step": "command_generation",
+        "result": "du -sh *.pdf | grep -E '^[0-9]+$' | sort -nr | head -n 1",
+        "time": 8.672425270080566
+      }
+    ],
+    "generated_command": "du -sh *.pdf | grep -E '^[0-9]+$' | sort -nr | head -n 1",
+    "explanation": "This finds largest files.",
+    "generation_time": 8.672425270080566,
+    "safety_check": {
+      "is_safe": true,
+      "warnings": [],
+      "sanitized_command": "du -sh *.pdf | grep -E '^[0-9]+$' | sort -nr | head -n 1",
+      "time": 0.0001468658447265625
+    },
+    "final_command": "du -sh *.pdf | grep -E '^[0-9]+$' | sort -nr | head -n 1",
+    "execution": {
+      "status": "success",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "du: cannot access '*.pdf': No such file or directory\n",
+      "command": "du -sh *.pdf | grep -E '^[0-9]+$' | sort -nr | head -n 1",
+      "timestamp": "2025-12-03T11:00:29.214673",
+      "execution_method": "docker"
+    },
+    "execution_time": 0.3297770023345947,
+    "status": "completed",
+    "total_time": 9.00260877609253
+  },
+  {
+    "query": "Show me the count of how many files are larger than 10MB on Desktop",
+    "timestamp": "2025-12-03T11:03:33.040826",
+    "steps": [
+      {
+        "step": "command_generation",
+        "result": "du -sh *.md | grep -E '^[0-9]+[MB]' | awk '{count+=$1} END {print count}'",
+        "time": 9.410439252853394
+      }
+    ],
+    "generated_command": "du -sh *.md | grep -E '^[0-9]+[MB]' | awk '{count+=$1} END {print count}'",
+    "explanation": "This counts files larger than 1MB.",
+    "generation_time": 9.410439252853394,
+    "safety_check": {
+      "is_safe": true,
+      "warnings": [],
+      "sanitized_command": "du -sh *.md | grep -E '^[0-9]+[MB]' | awk '{count+=$1} END {print count}'",
+      "time": 0.00016379356384277344
+    },
+    "final_command": "du -sh *.md | grep -E '^[0-9]+[MB]' | awk '{count+=$1} END {print count}'",
+    "execution": {
+      "status": "success",
+      "exit_code": 0,
+      "stdout": "\n",
+      "stderr": "du: cannot access '*.md': No such file or directory\n",
+      "command": "du -sh *.md | grep -E '^[0-9]+[MB]' | awk '{count+=$1} END {print count}'",
+      "timestamp": "2025-12-03T11:03:42.610988",
+      "execution_method": "docker"
+    },
+    "execution_time": 0.1592869758605957,
+    "status": "completed",
+    "total_time": 9.570319175720215
+  },
+  {
+    "query": "Show me the count of how many files are larger than 10MB on Documents",
+    "timestamp": "2025-12-03T11:03:57.671076",
+    "steps": [
+      {
+        "step": "command_generation",
+        "result": "du -sh *.doc | grep -E '^[0-9]+$' | wc -l",
+        "time": 5.855202674865723
+      }
+    ],
+    "generated_command": "du -sh *.doc | grep -E '^[0-9]+$' | wc -l",
+    "explanation": "This counts files larger than 10MB.",
+    "generation_time": 5.855202674865723,
+    "safety_check": {
+      "is_safe": true,
+      "warnings": [],
+      "sanitized_command": "du -sh *.doc | grep -E '^[0-9]+$' | wc -l",
+      "time": 0.00036907196044921875
+    },
+    "final_command": "du -sh *.doc | grep -E '^[0-9]+$' | wc -l",
+    "execution": {
+      "status": "success",
+      "exit_code": 0,
+      "stdout": "0\n",
+      "stderr": "du: cannot access '*.doc': No such file or directory\n",
+      "command": "du -sh *.doc | grep -E '^[0-9]+$' | wc -l",
+      "timestamp": "2025-12-03T11:04:03.707839",
+      "execution_method": "docker"
+    },
+    "execution_time": 0.1809549331665039,
+    "status": "completed",
+    "total_time": 6.036814212799072
+  },
+  {
+    "query": "Show me the count of how many files are larger than 10MB on Documents",
+    "timestamp": "2025-12-03T12:16:10.664589",
+    "steps": [
+      {
+        "step": "command_generation",
+        "result": "du -sh *.doc *.pdf | grep -E '^[0-9]+$'",
+        "time": 7.640789031982422
+      }
+    ],
+    "generated_command": "du -sh *.doc *.pdf | grep -E '^[0-9]+$'",
+    "explanation": "This counts files larger than 10MB.",
+    "generation_time": 7.640789031982422,
+    "safety_check": {
+      "is_safe": true,
+      "warnings": [],
+      "sanitized_command": "du -sh *.doc *.pdf | grep -E '^[0-9]+$'",
+      "time": 0.0034499168395996094
+    },
+    "final_command": "du -sh *.doc *.pdf | grep -E '^[0-9]+$'",
+    "execution": {
+      "status": "error",
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "du: cannot access '*.doc': No such file or directory\ndu: cannot access '*.pdf': No such file or directory\n",
+      "command": "du -sh *.doc *.pdf | grep -E '^[0-9]+$'",
+      "timestamp": "2025-12-03T12:16:18.536789",
+      "execution_method": "docker"
+    },
+    "execution_time": 0.2278599739074707,
+    "status": "completed",
+    "total_time": 7.872363090515137
+  },
+  {
+    "query": "How many PDF files do I have in Documents",
+    "timestamp": "2025-12-03T12:16:33.725321",
+    "steps": [
+      {
+        "step": "command_generation",
+        "result": "find Documents -name '*.pdf'",
+        "time": 4.021450996398926
+      }
+    ],
+    "generated_command": "find Documents -name '*.pdf'",
+    "explanation": "This finds all PDF files.",
+    "generation_time": 4.021450996398926,
+    "safety_check": {
+      "is_safe": true,
+      "warnings": [],
+      "sanitized_command": "find Documents -name '*.pdf'",
+      "time": 0.00011491775512695312
+    },
+    "final_command": "find Documents -name '*.pdf'",
+    "execution": {
+      "status": "success",
+      "exit_code": 0,
+      "stdout": "Documents/all files/FinalProject_Report_A20517172.pdf\nDocuments/all files/eNoticeLetter.pdf\nDocuments/all files/USCIS - I-765, Application for Employment Authorization - Your application summary.pdf\nDocuments/all files/94a2244f-8d06-4c97-892a-5ca8aeeffd72.pdf\nDocuments/LinkedLearning (Certificates)/CertificateOfCompletion_React Creating and Hosting a FullStack Site.pdf\nDocuments/LinkedLearning (Certificates)/Blackboard Learn.pdf\nDocuments/LinkedLearning (Certificates)/CertificateOfCompletion_Git Essential Training.pdf\nDocuments/LinkedLearning (Certificates)/cybersecurity_certificate.pdf\nDocuments/LinkedLearning (Certificates)/Order Receipt.pdf\nDocuments/PS_Rental_Files/comedbill.pdf\nDocuments/PS_Rental_Files/LP5A8E54C47.pdf\nDocuments/Blockchain_folder/cs550-fall2023-project-jamiek-main/final_report/DSC_Blockchain.pdf\nDocuments/Resumes/Venkata_Harsha_Pedada_HPC_Resume_phd.docx.pdf\nDocuments/Resumes/Venkata_Harsha_Pedada_Resume_phd (1).pdf\nDocuments/Resumes/Venkata_Harsha_Pedada_PHD_Resume.pdf\nDocuments/Resumes/Venkata_Harsha_Pedada_Resume.pdf\nDocuments/Resumes/venkyResume.pdf\nDocuments/Resumes/Venkata_Harsha_Pedada_GCP_SDE_Resume.pdf\nDocuments/Resumes/Venkata_Harsha_Pedada_SDE_Resume_cloud.pdf\nDocuments/Resumes/Venkata_Harsha_Pedada_AWS_Test_Resume.pdf\nDocuments/Resumes/Venkata_Harsha_Pedada_SDE_Resume.pdf\nDocuments/Resumes/ResumeARV.pdf.pdf\nDocuments/Resumes/Venkata_Harsha_Pedada_Byte_Resume.pdf\nDocuments/Resumes/Venkata_Harsha_Pedada_ML_PHD_resume.pdf\nDocuments/Resumes/Venkata_Harsha_Pedada_SDE_Resume_DataEngineer.pdf\nDocuments/Resumes/Venkata_Harsha_Pedada_Compiler_Resume_phd.pdf\nDocuments/Resumes/SOP_IIT_PHD.pdf\nDocuments/Resumes/venkata_harsha_resume.pdf\nDocuments/Resumes/Venkata_Harsha_Pedada_AWS_SDE_Resume.pdf\nDocuments/Resumes/Venkata_Harsha_Pedada_Resume_VAR_phdpdf.pdf\nDocuments/Resumes/Venkata_Harsha_Pedada_DP_Resume.pdf\nDocuments/Resumes/Venkata_Harsha_Pedada_ML_Resume_Phd.pdf\nDocuments/Resumes/Venkata_Harsha_Pedada_ML_Resume.pdf\nDocuments/Resumes/amazon(lp).pdf\nDocuments/Resumes/Venkata_Harsha_Pedada_Django_Resume.pdf\nDocuments/Resumes/Venkata_Harsha_Pedada_Reactjs_Resume (1).pdf\nDocuments/Resumes/Venkata_Harsha_Pedada_Amazon_SDE_Resume.pdf\nDocuments/Resumes/Venkata_Harsha_Pedada_Resume_phd.pdf\nDocuments/Resumes/Venkata_Harsha_Pedada_Reactjs_Resume.pdf\nDocuments/Resumes/Venkata_Harsha_Pedada_SDE_Resume_Microsoft.pdf\nDocuments/Resumes/Venkata_Harsha_Pedada_Google_SDE_Resume.pdf\nDocuments/RA_files/payment.pdf\nDocuments/RA_files/Get Your ID Card _ Aetna Student Health.pdf\nDocuments/RA_files/Credentials_certificate.pdf\nDocuments/RA_files/Offer Letter - Venkata Harsha Pedada(Signed).pdf\nDocuments/RA_files/signed_COL_I20.pdf\nDocuments/Immigration_files/OPT I-20.pdf\nDocuments/Immigration_files/Receipt Notice.pdf\nDocuments/Immigration_files/Grad Admission Venkata Harsha Pedada TA offer letter I Raicu - REVISED (Signed).pdf\nDocuments/Immigration_files/Passport_front.pdf\nDocuments/Immigration_files/VISA.pdf\nDocuments/Immigration_files/EAD HARSHA.pdf\nDocuments/Immigration_files/VISA (1).pdf\nDocuments/Immigration_files/Venkata Harsha Pedada_TA_Masters_signed offer letter.pdf\nDocuments/Immigration_files/Signed_OPT_I20.pdf\nDocuments/Immigration_files/Signed_Funding_Offer_letter.pdf\nDocuments/Immigration_files/I901_payment_confirmation_06072022.pdf\nDocuments/Immigration_files/passport.pdf\nDocuments/Immigration_files/Masters_transcripts.pdf\nDocuments/Immigration_files/passport (1).pdf\nDocuments/Immigration_files/diploma_degree.pdf\nDocuments/Immigration_files/Tenure Confirmation Letter - Venkata Harsha Pedada (3).pdf\nDocuments/Immigration_files/Undergrad_Transcripts.pdf\nDocuments/Immigration_files/Offer Letter - Venkata Harsha Pedada(Signed).pdf\nDocuments/Immigration_files/transcripts(original).pdf\nDocuments/Immigration_files/FAR_signed.pdf\nDocuments/Immigration_files/MUPPALA HYMAVATHI DS 160.pdf\nDocuments/Immigration_files/I-765 C03B Standalone Approval.pdf\nDocuments/Immigration_files/Drivers_License.pdf\nDocuments/Immigration_files/admission_Letter_phd.pdf\nDocuments/CS550_ADVOS/AIOS-LSFS.pdf\nDocuments/CS550_ADVOS/Progress Report-A20517172.pdf\nDocuments/CS550_ADVOS/Distributed_Systems_3.pdf\nDocuments/CS550_ADVOS/slides/lec_10message.pdf\nDocuments/CS550_ADVOS/slides/lec_7server.pdf\nDocuments/CS550_ADVOS/slides/lec_11alg.pdf\nDocuments/CS550_ADVOS/slides/lec_8mobility.pdf\nDocuments/CS550_ADVOS/slides/lec_9rpc.pdf\nDocuments/CS550_ADVOS/slides/lec12_mutual.pdf\nDocuments/CS550_ADVOS/slides/lec_6virtual.pdf\nDocuments/CS550_ADVOS/slides/Model Context Protocol (MCP)- Fall25.pdf\nDocuments/CS550_ADVOS/slides/lec20_ft.pdf\nDocuments/CS550_ADVOS/slides/lec16_ft.pdf\nDocuments/CS550_ADVOS/slides/lec21-blockchain.pdf\nDocuments/CS550_ADVOS/slides/lec23_review.pdf\nDocuments/CS550_ADVOS/slides/lec24-ft.pdf\nDocuments/CS550_ADVOS/slides/lec13_rep-1.pdf\nDocuments/CS550_ADVOS/slides/lec18_pfile.pdf\nDocuments/CS550_ADVOS/slides/IOWarp_In_The_Classroom.pdf\nDocuments/CS550_ADVOS/slides/lec_3arch.pdf\nDocuments/CS550_ADVOS/slides/lec_4dist.pdf\nDocuments/CS550_ADVOS/slides/lec17_ft.pdf\nDocuments/CS550_ADVOS/slides/lec_5process.pdf\nDocuments/CS550_ADVOS/slides/lec_2intro.pdf\nDocuments/CS550_ADVOS/slides/lec15_schedule.pdf\nDocuments/CS550_ADVOS/slides/lec14_rep-2.pdf\nDocuments/CS550_ADVOS/slides/lec_1view.pdf\nDocuments/CS550_ADVOS/Databricks-Big-Book-Of-GenAI-FINAL.pdf\nDocuments/CS550_ADVOS/CS550_02_Pedada_VenkataHarsha_HW2.pdf\nDocuments/CS550_ADVOS/CS550_02_Pedada_VenkataHarsha_HW1.pdf\nDocuments/CS550_ADVOS/System Design Interview An Insider\u2019s Guide by Alex Xu (z-lib.org).pdf\nDocuments/CS550_ADVOS/Homework-3-Fall-2025.pdf\nDocuments/Lab_research/evaluating_performance_brokerless_messaging_libraries.pdf\nDocuments/Lab_research/post268s1-file3.pdf\nDocuments/Lab_research/post268s1-file2.pdf\nDocuments/Lab_research/interesting_Paper.pdf\nDocuments/Lab_research/exploiting_multicores.pdf\nDocuments/Lab_research/75275c49-11c6-415d-b6bc-d49791e490c4.pdf\nDocuments/Lab_research/post113s1-file3.pdf\nDocuments/Lab_research/post113s1-file2.pdf\nDocuments/tax docs/W-9 (Rev. 10-2018).pdf\nDocuments/tax docs/state_Illinois.pdf\nDocuments/tax docs/state_Illinois(2024) (dragged).pdf\nDocuments/tax docs/federal_new-7-11.pdf\nDocuments/tax docs/1099-NEC.pdf\nDocuments/tax docs/state_Illinois_new.pdf\nDocuments/tax docs/loan_files/LoanAgreement_Document20230822-13-97m04n.pdf\nDocuments/tax docs/loan_files/Monthly_Statement_PDGUS492736_2025-04-11.pdf\nDocuments/tax docs/loan_files/SoFi_Loan_Approval_Packet_-_41461734.pdf\nDocuments/tax docs/loan_files/Settlement_Offer_PDGUS492736_2025-04-21.pdf\nDocuments/tax docs/loan_files/countersigned_LoanAgreement_Document20230822-13-97m04n.pdf\nDocuments/tax docs/loan_files/PCI_Document20230821-10-ezvtf3.pdf\nDocuments/tax docs/loan_files/pay in full agreement.pdf\nDocuments/tax docs/loan_files/final-disclosure.pdf\nDocuments/tax docs/loan_files/Approval_Disclosure_Document20230814-10-tt7blr.pdf\nDocuments/tax docs/w2(2024).pdf\nDocuments/tax docs/Payment Receipt.pdf\nDocuments/tax docs/federal.pdf\nDocuments/tax docs/federal_new.pdf\nDocuments/tax docs/federal(2024) (dragged).pdf\nDocuments/tax docs/w2.pdf\nDocuments/JobDocs/Complete_with_Docusign_LOKKER_-_Venkata\u00a0Hars/Summary.pdf\nDocuments/JobDocs/Complete_with_Docusign_LOKKER_-_Venkata\u00a0Hars/LOKKER_-_Venkata\u00a0Harsha_Pedada_Internship_Agreement__(1).docx.pdf\nDocuments/JobDocs/W4 FORM(final).pdf\nDocuments/JobDocs/Complete_with_Docusign_Mesa_NDA_Template_Oct.pdf\nDocuments/JobDocs/W4 FORM(filled).pdf\nDocuments/JobDocs/W4 FORM.pdf\nDocuments/JobDocs/i-9.pdf\nDocuments/JobDocs/Tenure Confirmation Letter - Venkata Harsha Pedada.pdf\nDocuments/JobDocs/i-9(final).pdf\nDocuments/JobDocs/Vedan LLC _Employee Information Form.pdf\nDocuments/JobDocs/Vedan LLC Direct Deposit Form (signed).pdf\nDocuments/JobDocs/i-9(copy).pdf\n",
+      "stderr": "",
+      "command": "find Documents -name '*.pdf'",
+      "timestamp": "2025-12-03T12:16:38.059416",
+      "execution_method": "docker"
+    },
+    "execution_time": 0.3124537467956543,
+    "status": "completed",
+    "total_time": 4.334309101104736
+  },
+  {
+    "query": "count How many PDF files do I have in Documents",
+    "timestamp": "2025-12-03T12:17:09.215246",
+    "steps": [
+      {
+        "step": "command_generation",
+        "result": "find Documents -name '*.pdf' | wc -l",
+        "time": 4.2237608432769775
+      }
+    ],
+    "generated_command": "find Documents -name '*.pdf' | wc -l",
+    "explanation": "This counts PDF files.",
+    "generation_time": 4.2237608432769775,
+    "safety_check": {
+      "is_safe": true,
+      "warnings": [],
+      "sanitized_command": "find Documents -name '*.pdf' | wc -l",
+      "time": 9.083747863769531e-05
+    },
+    "final_command": "find Documents -name '*.pdf' | wc -l",
+    "execution": {
+      "status": "success",
+      "exit_code": 0,
+      "stdout": "143\n",
+      "stderr": "",
+      "command": "find Documents -name '*.pdf' | wc -l",
+      "timestamp": "2025-12-03T12:17:13.989113",
+      "execution_method": "docker"
+    },
+    "execution_time": 0.5498690605163574,
+    "status": "completed",
+    "total_time": 4.774403095245361
+  },
+  {
+    "query": "count how many files larger than 10MB in Desktop",
+    "timestamp": "2025-12-03T12:17:41.895781",
+    "steps": [
+      {
+        "step": "command_generation",
+        "result": "find /home/user/Desktop -type f -size +10M",
+        "time": 5.985344886779785
+      }
+    ],
+    "generated_command": "find /home/user/Desktop -type f -size +10M",
+    "explanation": "This finds files larger than 10 megabytes.",
+    "generation_time": 5.985344886779785,
+    "safety_check": {
+      "is_safe": true,
+      "warnings": [],
+      "sanitized_command": "find /home/user/Desktop -type f -size +10M",
+      "time": 0.0001468658447265625
+    },
+    "final_command": "find /home/user/Desktop -type f -size +10M",
+    "execution": {
+      "status": "success",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "command": "find /home/user/Desktop -type f -size +10M",
+      "timestamp": "2025-12-03T12:17:48.042620",
+      "execution_method": "docker"
+    },
+    "execution_time": 0.1612412929534912,
+    "status": "completed",
+    "total_time": 6.14691686630249
+  },
+  {
+    "query": "count how many Python files in Documents",
+    "timestamp": "2025-12-03T12:18:23.256035",
+    "steps": [
+      {
+        "step": "command_generation",
+        "result": "find Documents -name '*.py' | wc -l",
+        "time": 4.669908046722412
+      }
+    ],
+    "generated_command": "find Documents -name '*.py' | wc -l",
+    "explanation": "This counts Python files.",
+    "generation_time": 4.669908046722412,
+    "safety_check": {
+      "is_safe": true,
+      "warnings": [],
+      "sanitized_command": "find Documents -name '*.py' | wc -l",
+      "time": 0.0001571178436279297
+    },
+    "final_command": "find Documents -name '*.py' | wc -l",
+    "execution": {
+      "status": "success",
+      "exit_code": 0,
+      "stdout": "129\n",
+      "stderr": "",
+      "command": "find Documents -name '*.py' | wc -l",
+      "timestamp": "2025-12-03T12:18:28.247404",
+      "execution_method": "docker"
+    },
+    "execution_time": 0.3211708068847656,
+    "status": "completed",
+    "total_time": 4.9914329051971436
+  },
+  {
+    "query": "Show disk usage of Downloads folder",
+    "timestamp": "2025-12-03T12:19:05.329976",
+    "steps": [
+      {
+        "step": "command_generation",
+        "result": "du -sh Downloads/",
+        "time": 5.656199932098389
+      }
+    ],
+    "generated_command": "du -sh Downloads/",
+    "explanation": "The -s counts total size, -h makes pretty.",
+    "generation_time": 5.656199932098389,
+    "safety_check": {
+      "is_safe": true,
+      "warnings": [],
+      "sanitized_command": "du -sh Downloads/",
+      "time": 0.000225067138671875
+    },
+    "final_command": "du -sh Downloads/",
+    "execution": {
+      "status": "success",
+      "exit_code": 0,
+      "stdout": "7.8M\tDownloads/\n",
+      "stderr": "",
+      "command": "du -sh Downloads/",
+      "timestamp": "2025-12-03T12:19:11.152608",
+      "execution_method": "docker"
+    },
+    "execution_time": 0.1660912036895752,
+    "status": "completed",
+    "total_time": 5.8226728439331055
+  },
+  {
+    "query": "find comedbill.pdf file inside any Documents folders",
+    "timestamp": "2025-12-03T12:20:04.800347",
+    "steps": [
+      {
+        "step": "command_generation",
+        "result": "find . -name 'comedbill.pdf' -path '*/Documents/*'",
+        "time": 6.8943281173706055
+      }
+    ],
+    "generated_command": "find . -name 'comedbill.pdf' -path '*/Documents/*'",
+    "explanation": "find. -name 'comedbill.pdf' -path '*/Documents/*'  This finds files in Documents folders.",
+    "generation_time": 6.8943281173706055,
+    "safety_check": {
+      "is_safe": true,
+      "warnings": [],
+      "sanitized_command": "find . -name 'comedbill.pdf' -path '*/Documents/*'",
+      "time": 0.00010275840759277344
+    },
+    "final_command": "find . -name 'comedbill.pdf' -path '*/Documents/*'",
+    "execution": {
+      "status": "success",
+      "exit_code": 0,
+      "stdout": "./Documents/PS_Rental_Files/comedbill.pdf\n",
+      "stderr": "",
+      "command": "find . -name 'comedbill.pdf' -path '*/Documents/*'",
+      "timestamp": "2025-12-03T12:20:11.939201",
+      "execution_method": "docker"
+    },
+    "execution_time": 0.24338412284851074,
+    "status": "completed",
+    "total_time": 7.13893985748291
+  },
+  {
+    "query": "find VaccineRecord.pdf file in Downloads",
+    "timestamp": "2025-12-03T12:20:25.670380",
+    "steps": [
+      {
+        "step": "command_generation",
+        "result": "find Downloads -name 'VaccineRecord.pdf'",
+        "time": 5.842083692550659
+      }
+    ],
+    "generated_command": "find Downloads -name 'VaccineRecord.pdf'",
+    "explanation": "This finds all VaccineRecord.pdf files.",
+    "generation_time": 5.842083692550659,
+    "safety_check": {
+      "is_safe": true,
+      "warnings": [],
+      "sanitized_command": "find Downloads -name 'VaccineRecord.pdf'",
+      "time": 0.00011491775512695312
+    },
+    "final_command": "find Downloads -name 'VaccineRecord.pdf'",
+    "execution": {
+      "status": "success",
+      "exit_code": 0,
+      "stdout": "Downloads/VaccineRecord.pdf\n",
+      "stderr": "",
+      "command": "find Downloads -name 'VaccineRecord.pdf'",
+      "timestamp": "2025-12-03T12:20:31.654180",
+      "execution_method": "docker"
+    },
+    "execution_time": 0.14113402366638184,
+    "status": "completed",
+    "total_time": 5.983858108520508
+  },
+  {
+    "query": "Display all the files which are larger than 10MB in Documents",
+    "timestamp": "2025-12-03T12:21:50.882717",
+    "steps": [
+      {
+        "step": "command_generation",
+        "result": "du -sh *.doc *.pdf | grep -v '^$' | sort -hr | head -10M",
+        "time": 8.408796072006226
+      }
+    ],
+    "generated_command": "du -sh *.doc *.pdf | grep -v '^$' | sort -hr | head -10M",
+    "explanation": "This shows largest files meeting criteria.",
+    "generation_time": 8.408796072006226,
+    "safety_check": {
+      "is_safe": true,
+      "warnings": [],
+      "sanitized_command": "du -sh *.doc *.pdf | grep -v '^$' | sort -hr | head -10M",
+      "time": 0.0001461505889892578
+    },
+    "final_command": "du -sh *.doc *.pdf | grep -v '^$' | sort -hr | head -10M",
+    "execution": {
+      "status": "error",
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "du: cannot access '*.doc'head: : No such file or directory\ninvalid trailing option -- M\ndu: cannot access '*.pdf': No such file or directory\nTry 'head --help' for more information.\n",
+      "command": "du -sh *.doc *.pdf | grep -v '^$' | sort -hr | head -10M",
+      "timestamp": "2025-12-03T12:21:59.435292",
+      "execution_method": "docker"
+    },
+    "execution_time": 0.1409761905670166,
+    "status": "completed",
+    "total_time": 8.552612066268921
   }
 ]

@@ -1,11 +1,16 @@
 # src/glsfs_system.py
+"""
+GLSFS Main System - Optimized for Speed
+
+Includes warmup call to pre-initialize model caches for faster inference.
+"""
 
 import json
 import os
 import sys
+import time
 from datetime import datetime
 
-# Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.models.granite_loader import GraniteCommandGenerator
@@ -14,30 +19,31 @@ from src.sandbox.executor import SandboxExecutor
 
 
 class LSFSCompetitor:
-    def __init__(self, model_path=None, use_docker=True):
+    def __init__(self, model_path=None, use_docker=True, warmup=True):
         """
-        Initialize LSFS competitor system
+        Initialize LSFS competitor system.
         
         Args:
             model_path: Path to fine-tuned Granite model
-                       If None, uses default: ~/glsfs/models/granite/glsfs_granite_finetuned
-            use_docker: Whether to use Docker sandbox (recommended)
+            use_docker: Whether to use Docker sandbox
+            warmup: Run warmup inference for faster subsequent calls
         """
         print("=" * 60)
         print("Initializing GLSFS (Granite LLM Semantic File System)...")
         print("=" * 60)
         
-        # Set default model path if not provided
         if model_path is None:
             model_path = os.path.expanduser("~/glsfs/models/granite/glsfs_granite_finetuned")
         
         print(f"\n📦 Model path: {model_path}")
         print(f"🐳 Docker mode: {'Enabled' if use_docker else 'Disabled'}")
         
-        # Initialize components
         try:
             print("\n1️⃣  Loading Granite model...")
+            load_start = time.time()
             self.command_generator = GraniteCommandGenerator(model_path)
+            load_time = time.time() - load_start
+            print(f"   Model loaded in {load_time:.1f}s")
             
             print("2️⃣  Initializing safety validator...")
             self.validator = CommandSafetyValidator()
@@ -55,52 +61,67 @@ class LSFSCompetitor:
         self.log_file = os.path.join(log_dir, "lsfs_operations.json")
         
         print(f"\n📝 Logging to: {self.log_file}")
+        
+        # Warmup for faster inference
+        if warmup:
+            print("\n4️⃣  Warming up model (for faster responses)...")
+            self._warmup()
+        
         print("\n" + "=" * 60)
         print("✅ System initialized successfully!")
         print("=" * 60 + "\n")
     
+    def _warmup(self):
+        """Run warmup inference to pre-initialize caches."""
+        try:
+            start = time.time()
+            # Simple query to warm up the model
+            _ = self.command_generator.generate_command("list files")
+            warmup_time = time.time() - start
+            print(f"   ✅ Warmup complete ({warmup_time:.2f}s)")
+            print(f"   📈 Subsequent queries will be faster!")
+        except Exception as e:
+            print(f"   ⚠️  Warmup failed: {e} (not critical)")
+    
     def process_query(self, natural_language_query, auto_execute=True):
         """
         Main pipeline: Query -> Command -> Validate -> Execute
-        
-        Args:
-            natural_language_query: User's question in plain English
-            auto_execute: If False, ask for confirmation before executing
-            
-        Returns:
-            dict with full pipeline results
         """
+        total_start = time.time()
+        
         response = {
             'query': natural_language_query,
             'timestamp': datetime.now().isoformat(),
             'steps': []
         }
         
-        # Step 1: Generate command using Granite model
         print(f"\n{'=' * 60}")
         print(f"🤖 Query: '{natural_language_query}'")
         print(f"{'=' * 60}")
         
+        # Step 1: Generate command
         try:
+            gen_start = time.time()
             command_result = self.command_generator.generate_command(natural_language_query)
+            gen_time = time.time() - gen_start
+            
             command = command_result['command']
             explanation = command_result.get('explanation', '')
             
             response['generated_command'] = command
             response['explanation'] = explanation
+            response['generation_time'] = gen_time
             response['steps'].append({
                 'step': 'command_generation',
                 'result': command,
-                'explanation': explanation
+                'time': gen_time
             })
             
-            print(f"\n📝 Generated command:")
+            print(f"\n📝 Generated command ({gen_time:.2f}s):")
             print(f"   {command}")
             if explanation:
-                print(f"\n💡 Explanation:")
-                # Truncate long explanations
-                exp_preview = explanation[:200] + "..." if len(explanation) > 200 else explanation
-                print(f"   {exp_preview}")
+                exp_preview = explanation[:150] + "..." if len(explanation) > 150 else explanation
+                print(f"\n💡 Explanation: {exp_preview}")
                 
         except Exception as e:
             response['status'] = 'generation_error'
@@ -111,18 +132,16 @@ class LSFSCompetitor:
         
         # Step 2: Validate safety
         print(f"\n🔒 Validating safety...")
+        val_start = time.time()
         is_safe, warnings, sanitized_command = self.validator.validate(command)
+        val_time = time.time() - val_start
         
         response['safety_check'] = {
             'is_safe': is_safe,
             'warnings': warnings,
-            'sanitized_command': sanitized_command
+            'sanitized_command': sanitized_command,
+            'time': val_time
         }
-        response['steps'].append({
-            'step': 'safety_validation',
-            'is_safe': is_safe,
-            'warnings': warnings
-        })
         
         if not is_safe:
             response['status'] = 'blocked'
@@ -146,83 +165,82 @@ class LSFSCompetitor:
                     self._log_operation(response)
                     return response
         else:
-            print(f"   ✅ Command is safe")
+            print(f"   ✅ Command is safe ({val_time*1000:.1f}ms)")
         
-        # Use sanitized command if available
         final_command = sanitized_command if sanitized_command else command
         response['final_command'] = final_command
         
-        # Step 3: Execute in sandbox
-        print(f"\n🚀 Executing in sandbox...")
-        print(f"   Command: {final_command}")
+        # Step 3: Execute
+        print(f"\n🚀 Executing...")
+        exec_start = time.time()
         
         try:
             execution_result = self.executor.execute(final_command, timeout=30)
+            exec_time = time.time() - exec_start
+            
             response['execution'] = execution_result
-            response['steps'].append({
-                'step': 'execution',
-                'result': execution_result
-            })
+            response['execution_time'] = exec_time
             
             if execution_result['status'] == 'success':
-                print(f"\n✅ Execution successful!")
+                print(f"\n✅ Execution successful ({exec_time:.2f}s)!")
                 if execution_result['stdout']:
-                    # Limit output display
                     stdout = execution_result['stdout']
                     lines = stdout.split('\n')
-                    if len(lines) > 50:
-                        stdout = '\n'.join(lines[:50]) + f"\n... ({len(lines) - 50} more lines)"
+                    if len(lines) > 30:
+                        stdout = '\n'.join(lines[:30]) + f"\n... ({len(lines) - 30} more lines)"
                     print(f"\n📤 Output:\n{stdout}")
                 else:
                     print(f"\n📤 (No output)")
             else:
-                print(f"\n❌ Execution failed!")
+                print(f"\n❌ Execution failed ({exec_time:.2f}s)!")
                 if execution_result['stderr']:
                     print(f"\n📤 Error:\n{execution_result['stderr']}")
-                elif execution_result.get('error'):
-                    print(f"\n📤 Error: {execution_result['error']}")
                     
         except Exception as e:
+            exec_time = time.time() - exec_start
             response['execution'] = {
                 'status': 'error',
                 'error': str(e)
             }
             print(f"\n❌ Execution error: {e}")
         
+        # Total time
+        total_time = time.time() - total_start
         response['status'] = 'completed'
+        response['total_time'] = total_time
+        
+        print(f"\n⏱️  Total time: {total_time:.2f}s")
+        
         self._log_operation(response)
         return response
     
     def _log_operation(self, response):
-        """Log operation for audit trail and model improvement"""
+        """Log operation for audit trail."""
         try:
-            # Load existing logs
             logs = []
             if os.path.exists(self.log_file):
                 try:
                     with open(self.log_file, 'r') as f:
                         logs = json.load(f)
-                except (json.JSONDecodeError, IOError):
+                except:
                     logs = []
             
-            # Append new log
             logs.append(response)
             
-            # Keep only last 1000 entries to prevent file from growing too large
-            if len(logs) > 1000:
-                logs = logs[-1000:]
+            # Keep only last 500 entries
+            if len(logs) > 500:
+                logs = logs[-500:]
             
-            # Save logs
             with open(self.log_file, 'w') as f:
-                json.dump(logs, f, indent=2)
+                json.dump(logs, f, indent=2, default=str)
                 
         except Exception as e:
             print(f"⚠️  Logging error: {e}")
     
     def interactive_mode(self):
-        """Run in interactive mode"""
+        """Run in interactive mode."""
         print("\n" + "=" * 60)
-        print("GLSFS - Interactive Mode")
+        print("GLSFS - Interactive Mode (Optimized)")
         print("=" * 60)
         print("\n📁 Accessible Directories:")
         print("   • Desktop    (read-only)  - Your Mac Desktop")
@@ -263,68 +281,34 @@ class LSFSCompetitor:
                 print(f"\n❌ Error: {e}\n")
     
     def _show_help(self):
-        """Show help information"""
+        """Show help information."""
         help_text = """
 ╔══════════════════════════════════════════════════════════════╗
-║                    GLSFS - Help & Examples                   ║
+║                    GLSFS - Quick Examples                    ║
 ╚══════════════════════════════════════════════════════════════╝
-
-📁 MOUNTED FOLDERS:
-  Your real Mac folders are accessible:
-  
-  📂 Desktop    → /home/user/Desktop    (READ-ONLY)
-  📂 Documents  → /home/user/Documents  (READ-ONLY)
-  📂 Downloads  → /home/user/Downloads  (READ-ONLY)
-  📂 workspace  → /home/user/workspace  (READ-WRITE)
 
 📝 EXAMPLE QUERIES:
 
-  ┌─ List Files ───────────────────────────────────────────────┐
-  │ • "What files are on my Desktop?"                          │
-  │ • "Show all files in Documents"                            │
-  │ • "List my Downloads folder"                               │
-  │ • "Show files in workspace"                                │
-  └────────────────────────────────────────────────────────────┘
-  
-  ┌─ Search Files ─────────────────────────────────────────────┐
-  │ • "Find all Python files in Documents"                     │
-  │ • "Find PDF files in Downloads"                            │
-  │ • "Show me files larger than 10MB on Desktop"              │
-  │ • "Find files modified in the last week"                   │
-  └────────────────────────────────────────────────────────────┘
-  
-  ┌─ Read File Contents ───────────────────────────────────────┐
-  │ • "Show contents of readme.txt on Desktop"                 │
-  │ • "Display the first 20 lines of report.txt"               │
-  │ • "Count lines in myfile.py in Documents"                  │
-  └────────────────────────────────────────────────────────────┘
-  
-  ┌─ File Statistics ──────────────────────────────────────────┐
-  │ • "How many PDF files do I have in Documents?"             │
-  │ • "Show disk usage of Desktop folder"                      │
-  │ • "What's the total size of my Downloads?"                 │
-  └────────────────────────────────────────────────────────────┘
-  
-  ┌─ Write Operations (workspace only) ────────────────────────┐
-  │ • "Create a file called test.txt in workspace"             │
-  │ • "Make a folder called projects in workspace"             │
-  └────────────────────────────────────────────────────────────┘
+  List Files:
+    • "list files on Desktop"
+    • "show what's in Documents"
+    
+  Search:
+    • "find all PDF files"
+    • "find files named report"
+    
+  File Info:
+    • "show disk usage"
+    • "count files in Downloads"
 
-⚠️  SAFETY NOTES:
-  • Desktop, Documents, Downloads are READ-ONLY (your real files are safe!)
-  • Write operations only work in /home/user/workspace
-  • Dangerous operations (rm -rf, etc.) are blocked
-  • All commands run in isolated Docker container
-
-📋 SPECIAL COMMANDS:
-  • 'workspace' - Show contents of all accessible directories
-  • 'help'      - Show this help message
-  • 'exit'      - Quit the program
+⚡ PERFORMANCE:
+  • First query: ~3-8 seconds (model warmup)
+  • Subsequent queries: ~2-5 seconds
         """
         print(help_text)
     
     def __del__(self):
-        """Cleanup when system shuts down"""
+        """Cleanup when system shuts down."""
         if hasattr(self, 'executor'):
             try:
                 self.executor.cleanup()
