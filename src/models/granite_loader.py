@@ -1,8 +1,28 @@
 # src/models/granite_loader.py
+"""
+Granite Model Loader for GLSFS
+
+This module handles loading the fine-tuned Granite model and generating
+bash commands from natural language queries.
+
+PATH NORMALIZATION:
+==================
+The model may output paths in various formats:
+  - "Desktop" or "desktop"
+  - "Desktop/" or "Documents/file.txt"
+  - "~/Desktop" or "$HOME/Documents"
+  
+This module normalizes ALL of these to absolute Docker paths:
+  - /home/user/Desktop
+  - /home/user/Documents
+  - /home/user/Downloads
+  - /home/user/workspace
+"""
 
 import torch
 import os
 import re
+
 
 class GraniteCommandGenerator:
     def __init__(self, model_path=None):
@@ -25,7 +45,6 @@ class GraniteCommandGenerator:
         
         print(f"⏳ Loading model from {model_path}...")
         
-        
         try:
             # Try using unsloth (same as training)
             from unsloth import FastLanguageModel
@@ -34,32 +53,27 @@ class GraniteCommandGenerator:
                 model_name=model_path,
                 max_seq_length=2048,
                 dtype=None,
-                load_in_4bit=False,  # Set to False for inference on Mac
+                load_in_4bit=False,
             )
             
-            # Enable fast inference mode
             FastLanguageModel.for_inference(self.model)
-            
             print("✅ Model loaded with Unsloth!")
             
         except ImportError:
             print("⚠️  Unsloth not available, trying standard loading...")
             
-            # Fallback to standard transformers
             from transformers import AutoModelForCausalLM, AutoTokenizer
             
             self.tokenizer = AutoTokenizer.from_pretrained(model_path)
             self.model = AutoModelForCausalLM.from_pretrained(
                 model_path,
-                torch_dtype=torch.float32,  # Use float32 for Mac
-                device_map="cpu",  # Force CPU on Mac
+                torch_dtype=torch.float32,
+                device_map="cpu",
                 low_cpu_mem_usage=True
             )
             self.model.eval()
-            
             print("✅ Model loaded with Transformers!")
         
-        # Set padding token
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
         
@@ -75,7 +89,6 @@ class GraniteCommandGenerator:
         Returns:
             dict with 'command' and 'explanation' keys
         """
-        # Format prompt EXACTLY as in training
         system_message = "You are an expert Linux filesystem assistant. When users ask about file operations, provide accurate bash commands with clear explanations. For dangerous operations, include warnings."
         
         formatted_prompt = (
@@ -84,7 +97,6 @@ class GraniteCommandGenerator:
             f"Assistant:"
         )
         
-        # Tokenize
         inputs = self.tokenizer(
             formatted_prompt,
             return_tensors="pt",
@@ -93,11 +105,9 @@ class GraniteCommandGenerator:
             max_length=2048
         )
         
-        # Move to model device
         device = next(self.model.parameters()).device
         inputs = {k: v.to(device) for k, v in inputs.items()}
         
-        # Generate
         with torch.no_grad():
             outputs = self.model.generate(
                 **inputs,
@@ -109,17 +119,17 @@ class GraniteCommandGenerator:
                 eos_token_id=self.tokenizer.eos_token_id
             )
         
-        # Decode
         generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
         
-        # Extract assistant response
         if "Assistant:" in generated_text:
             response_text = generated_text.split("Assistant:")[-1].strip()
         else:
             response_text = generated_text.strip()
         
-        # Parse command and explanation
         command, explanation = self._parse_response(response_text)
+        
+        # CRITICAL: Normalize paths before returning
+        command = self._normalize_paths(command)
         
         return {
             'command': command,
@@ -128,27 +138,144 @@ class GraniteCommandGenerator:
         }
     
     def _normalize_paths(self, command):
-        """Convert Desktop/Documents/Downloads to absolute paths"""
-        import re
+        """
+        Normalize ALL path variations to absolute /home/user/ paths.
         
-        if '/home/user/' not in command:
-            # Fix spacing bug
-            command = command.replace('find.', 'find .')
-            
-            # Normalize directory references
-            replacements = [
-                (r'(\s|^)(Desktop/)', r'\1/home/user/Desktop/'),
-                (r'(\s|^)(Documents/)', r'\1/home/user/Documents/'),
-                (r'(\s|^)(Downloads/)', r'\1/home/user/Downloads/'),
-                (r'(\s|^)(Desktop)(\s|$)', r'\1/home/user/Desktop\3'),
-                (r'(\s|^)(Documents)(\s|$)', r'\1/home/user/Documents\3'),
-                (r'(\s|^)(Downloads)(\s|$)', r'\1/home/user/Downloads\3'),
-            ]
-            
-            for pattern, replacement in replacements:
-                command = re.sub(pattern, replacement, command)
+        Handles:
+          - desktop, Desktop, DESKTOP -> /home/user/Desktop
+          - documents/, Documents -> /home/user/Documents
+          - ~/Desktop -> /home/user/Desktop
+          - $HOME/Documents -> /home/user/Documents
+          - Bare folder names at start of path arguments
+        """
+        if not command:
+            return command
         
-        return command
+        # Fix common model output bugs
+        command = command.replace('find.', 'find .')
+        command = command.replace('ls.', 'ls .')
+        
+        # Handle ~ and $HOME first
+        command = command.replace('~/', '/home/user/')
+        command = command.replace('$HOME/', '/home/user/')
+        command = command.replace('${HOME}/', '/home/user/')
+        command = re.sub(r'~(?=\s|$|/)', '/home/user', command)
+        command = re.sub(r'\$HOME(?=\s|$|/)', '/home/user', command)
+        command = re.sub(r'\$\{HOME\}(?=\s|$|/)', '/home/user', command)
+        
+        # If already has /home/user/, we're mostly done
+        # But still need to handle case sensitivity
+        
+        # Define the canonical folder mappings (case-insensitive)
+        folder_mappings = {
+            'desktop': '/home/user/Desktop',
+            'documents': '/home/user/Documents',
+            'downloads': '/home/user/Downloads',
+            'workspace': '/home/user/workspace',
+        }
+        
+        # Strategy: Split command into tokens, normalize path-like tokens
+        # This handles cases like: ls -la desktop/ | head
+        
+        result = self._normalize_command_paths(command, folder_mappings)
+        
+        return result
+    
+    def _normalize_command_paths(self, command, folder_mappings):
+        """
+        Intelligently normalize paths in a command string.
+        
+        This function identifies path arguments in commands and normalizes them.
+        """
+        # Patterns that indicate a path argument follows
+        # After these, the next token is likely a path
+        path_indicators = [
+            'ls', 'cat', 'head', 'tail', 'less', 'more',
+            'find', 'grep', 'du', 'df', 'wc', 'file', 'stat',
+            'cd', 'tree', 'mkdir', 'rmdir', 'touch', 'rm',
+            'cp', 'mv', 'chmod', 'chown',
+            '-name', '-path', '-type',  # find arguments
+            '-C',  # some commands use -C for directory
+        ]
+        
+        # Split preserving quotes and special characters
+        tokens = self._tokenize_command(command)
+        normalized_tokens = []
+        
+        for i, token in enumerate(tokens):
+            normalized = self._normalize_single_path(token, folder_mappings)
+            normalized_tokens.append(normalized)
+        
+        return ' '.join(normalized_tokens)
+    
+    def _tokenize_command(self, command):
+        """
+        Split command into tokens, preserving quoted strings.
+        """
+        tokens = []
+        current = ""
+        in_quote = None
+        
+        for char in command:
+            if char in '"\'':
+                if in_quote == char:
+                    in_quote = None
+                elif in_quote is None:
+                    in_quote = char
+                current += char
+            elif char == ' ' and in_quote is None:
+                if current:
+                    tokens.append(current)
+                    current = ""
+            else:
+                current += char
+        
+        if current:
+            tokens.append(current)
+        
+        return tokens
+    
+    def _normalize_single_path(self, token, folder_mappings):
+        """
+        Normalize a single token if it looks like a path.
+        """
+        # Skip flags, operators, and special tokens
+        if token.startswith('-') or token in ['|', '&&', '||', ';', '>', '<', '>>', '2>', '2>&1']:
+            return token
+        
+        # Skip if already an absolute path (but might need case fixing)
+        if token.startswith('/home/user/'):
+            # Fix case: /home/user/documents -> /home/user/Documents
+            for folder_lower, folder_correct in folder_mappings.items():
+                wrong_case = f'/home/user/{folder_lower}'
+                if token.lower().startswith(wrong_case.lower()):
+                    # Replace the folder part with correct case
+                    remainder = token[len(wrong_case):]
+                    return folder_correct + remainder
+            return token
+        
+        # Skip other absolute paths
+        if token.startswith('/'):
+            return token
+        
+        # Check if token starts with a known folder name (case-insensitive)
+        token_lower = token.lower()
+        
+        for folder_lower, folder_correct in folder_mappings.items():
+            # Match: "desktop", "desktop/", "desktop/file.txt", "Desktop/subdir/file"
+            if token_lower == folder_lower:
+                # Bare folder name: desktop -> /home/user/Desktop
+                return folder_correct
+            
+            if token_lower.startswith(folder_lower + '/'):
+                # Folder with path: desktop/file.txt -> /home/user/Desktop/file.txt
+                remainder = token[len(folder_lower):]  # Keep original case for remainder
+                return folder_correct + remainder
+        
+        # Check for patterns like "*.pdf" in current directory - leave as is
+        # Check for relative paths like "./something" - leave as is
+        
+        return token
     
     def _parse_response(self, response_text):
         """Parse response to extract command and explanation"""
@@ -159,24 +286,26 @@ class GraniteCommandGenerator:
         found_blank = False
         
         for line in lines:
+            stripped = line.strip()
+            
             if not found_blank:
-                if line.strip() == '':
+                if stripped == '':
                     found_blank = True
-                elif not line.startswith('#') and not line.startswith('This'):
-                    command_lines.append(line.strip())
+                elif not stripped.startswith('#') and not stripped.startswith('This') and not stripped.startswith('The '):
+                    command_lines.append(stripped)
                 else:
                     found_blank = True
-                    explanation_lines.append(line.strip())
+                    explanation_lines.append(stripped)
             else:
-                explanation_lines.append(line.strip())
+                explanation_lines.append(stripped)
         
         command = ' '.join(command_lines).strip()
         explanation = ' '.join(explanation_lines).strip()
         
-        # Fallback: look for command at start
+        # Fallback: look for command pattern at start
         if not command:
-            command_pattern = r'^(find|ls|grep|du|df|cat|head|tail|sort|chmod|rm|cp|mv|mkdir|touch|echo)\b.*'
-            match = re.match(command_pattern, response_text, re.IGNORECASE)
+            command_starters = r'^(find|ls|grep|du|df|cat|head|tail|sort|chmod|rm|cp|mv|mkdir|touch|echo|wc|file|stat|tree|pwd|less|more|awk|sed|cut|uniq|diff)\b'
+            match = re.match(command_starters, response_text, re.IGNORECASE)
             if match:
                 first_line_end = response_text.find('\n')
                 if first_line_end > 0:
@@ -188,6 +317,33 @@ class GraniteCommandGenerator:
             else:
                 command = response_text.strip()
                 explanation = ""
-        command = command.replace('find.', 'find .')    
-        command = self._normalize_paths(command)    
+        
+        # Clean up command
+        command = self._clean_command(command)
+        
         return command, explanation
+    
+    def _clean_command(self, command):
+        """Clean up command formatting issues"""
+        if not command:
+            return command
+        
+        # Fix spacing issues
+        command = command.replace('find.', 'find .')
+        command = command.replace('ls.', 'ls .')
+        
+        # Remove wrapping quotes
+        if (command.startswith('"') and command.endswith('"')) or \
+           (command.startswith("'") and command.endswith("'")):
+            command = command[1:-1]
+        
+        # Remove markdown code formatting
+        if command.startswith('`') and command.endswith('`'):
+            command = command[1:-1]
+        
+        # Remove shell prompt prefixes
+        for prefix in ['$ ', '# ', '> ']:
+            if command.startswith(prefix):
+                command = command[len(prefix):]
+        
+        return command.strip()

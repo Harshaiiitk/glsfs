@@ -1,4 +1,4 @@
-# src/lsfs_system.py
+# src/glsfs_system.py
 
 import json
 import os
@@ -12,6 +12,7 @@ from src.models.granite_loader import GraniteCommandGenerator
 from src.safety.validator import CommandSafetyValidator
 from src.sandbox.executor import SandboxExecutor
 
+
 class LSFSCompetitor:
     def __init__(self, model_path=None, use_docker=True):
         """
@@ -22,9 +23,9 @@ class LSFSCompetitor:
                        If None, uses default: ~/glsfs/models/granite/glsfs_granite_finetuned
             use_docker: Whether to use Docker sandbox (recommended)
         """
-        print("="*60)
+        print("=" * 60)
         print("Initializing GLSFS (Granite LLM Semantic File System)...")
-        print("="*60)
+        print("=" * 60)
         
         # Set default model path if not provided
         if model_path is None:
@@ -54,9 +55,9 @@ class LSFSCompetitor:
         self.log_file = os.path.join(log_dir, "lsfs_operations.json")
         
         print(f"\n📝 Logging to: {self.log_file}")
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("✅ System initialized successfully!")
-        print("="*60 + "\n")
+        print("=" * 60 + "\n")
     
     def process_query(self, natural_language_query, auto_execute=True):
         """
@@ -76,9 +77,9 @@ class LSFSCompetitor:
         }
         
         # Step 1: Generate command using Granite model
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"🤖 Query: '{natural_language_query}'")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
         
         try:
             command_result = self.command_generator.generate_command(natural_language_query)
@@ -97,7 +98,9 @@ class LSFSCompetitor:
             print(f"   {command}")
             if explanation:
                 print(f"\n💡 Explanation:")
-                print(f"   {explanation[:200]}...")  # First 200 chars
+                # Truncate long explanations
+                exp_preview = explanation[:200] + "..." if len(explanation) > 200 else explanation
+                print(f"   {exp_preview}")
                 
         except Exception as e:
             response['status'] = 'generation_error'
@@ -150,35 +153,41 @@ class LSFSCompetitor:
         response['final_command'] = final_command
         
         # Step 3: Execute in sandbox
-        if auto_execute or warnings:
-            print(f"\n🚀 Executing in sandbox...")
-            print(f"   Command: {final_command}")
+        print(f"\n🚀 Executing in sandbox...")
+        print(f"   Command: {final_command}")
+        
+        try:
+            execution_result = self.executor.execute(final_command, timeout=30)
+            response['execution'] = execution_result
+            response['steps'].append({
+                'step': 'execution',
+                'result': execution_result
+            })
             
-            try:
-                execution_result = self.executor.execute(final_command, timeout=30)
-                response['execution'] = execution_result
-                response['steps'].append({
-                    'step': 'execution',
-                    'result': execution_result
-                })
-                
-                if execution_result['status'] == 'success':
-                    print(f"\n✅ Execution successful!")
-                    if execution_result['stdout']:
-                        print(f"\n📤 Output:")
-                        print(f"{execution_result['stdout']}")
+            if execution_result['status'] == 'success':
+                print(f"\n✅ Execution successful!")
+                if execution_result['stdout']:
+                    # Limit output display
+                    stdout = execution_result['stdout']
+                    lines = stdout.split('\n')
+                    if len(lines) > 50:
+                        stdout = '\n'.join(lines[:50]) + f"\n... ({len(lines) - 50} more lines)"
+                    print(f"\n📤 Output:\n{stdout}")
                 else:
-                    print(f"\n❌ Execution failed!")
-                    if execution_result['stderr']:
-                        print(f"\n📤 Error:")
-                        print(f"{execution_result['stderr']}")
-                        
-            except Exception as e:
-                response['execution'] = {
-                    'status': 'error',
-                    'error': str(e)
-                }
-                print(f"\n❌ Execution error: {e}")
+                    print(f"\n📤 (No output)")
+            else:
+                print(f"\n❌ Execution failed!")
+                if execution_result['stderr']:
+                    print(f"\n📤 Error:\n{execution_result['stderr']}")
+                elif execution_result.get('error'):
+                    print(f"\n📤 Error: {execution_result['error']}")
+                    
+        except Exception as e:
+            response['execution'] = {
+                'status': 'error',
+                'error': str(e)
+            }
+            print(f"\n❌ Execution error: {e}")
         
         response['status'] = 'completed'
         self._log_operation(response)
@@ -188,17 +197,20 @@ class LSFSCompetitor:
         """Log operation for audit trail and model improvement"""
         try:
             # Load existing logs
+            logs = []
             if os.path.exists(self.log_file):
-                with open(self.log_file, 'r') as f:
-                    try:
+                try:
+                    with open(self.log_file, 'r') as f:
                         logs = json.load(f)
-                    except json.JSONDecodeError:
-                        logs = []
-            else:
-                logs = []
+                except (json.JSONDecodeError, IOError):
+                    logs = []
             
             # Append new log
             logs.append(response)
+            
+            # Keep only last 1000 entries to prevent file from growing too large
+            if len(logs) > 1000:
+                logs = logs[-1000:]
             
             # Save logs
             with open(self.log_file, 'w') as f:
@@ -209,15 +221,20 @@ class LSFSCompetitor:
     
     def interactive_mode(self):
         """Run in interactive mode"""
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("GLSFS - Interactive Mode")
-        print("="*60)
-        print("Commands:")
-        print("  - Type your question in natural language")
-        print("  - 'help' - Show help")
-        print("  - 'workspace' - Show workspace contents")
-        print("  - 'exit' - Quit")
-        print("="*60 + "\n")
+        print("=" * 60)
+        print("\n📁 Accessible Directories:")
+        print("   • Desktop    (read-only)  - Your Mac Desktop")
+        print("   • Documents  (read-only)  - Your Mac Documents")
+        print("   • Downloads  (read-only)  - Your Mac Downloads")
+        print("   • workspace  (read-write) - For creating files")
+        print("\n💬 Commands:")
+        print("   • Type your question in natural language")
+        print("   • 'help'      - Show examples")
+        print("   • 'workspace' - Show all accessible files")
+        print("   • 'exit'      - Quit")
+        print("=" * 60 + "\n")
         
         while True:
             try:
@@ -234,7 +251,7 @@ class LSFSCompetitor:
                     self._show_help()
                     
                 elif query.lower() == 'workspace':
-                    print("\n📁 Workspace contents:")
+                    print("\n📁 Accessible files:")
                     print(self.executor.get_workspace_contents())
                     
                 else:
@@ -248,42 +265,68 @@ class LSFSCompetitor:
     def _show_help(self):
         """Show help information"""
         help_text = """
+╔══════════════════════════════════════════════════════════════╗
+║                    GLSFS - Help & Examples                   ║
+╚══════════════════════════════════════════════════════════════╝
+
+📁 MOUNTED FOLDERS:
+  Your real Mac folders are accessible:
+  
+  📂 Desktop    → /home/user/Desktop    (READ-ONLY)
+  📂 Documents  → /home/user/Documents  (READ-ONLY)
+  📂 Downloads  → /home/user/Downloads  (READ-ONLY)
+  📂 workspace  → /home/user/workspace  (READ-WRITE)
 
 📝 EXAMPLE QUERIES:
 
-  Basic Operations:
-    • "What files are on my desktop?"
-    • "Show all Python files"
-    • "List files in my documents folder"
-    
-  Search Operations:
-    • "Find files modified in the last week"
-    • "Show me files larger than 10MB"
-    • "Find all text files containing 'TODO'"
-    
-  File Management:
-    • "Create a folder called projects"
-    • "Copy all images to backup folder"
-    • "Show the 10 largest files"
-    
-  Advanced:
-    • "Find Python files modified today"
-    • "Show disk usage of each folder"
-    • "Count how many log files I have"
+  ┌─ List Files ───────────────────────────────────────────────┐
+  │ • "What files are on my Desktop?"                          │
+  │ • "Show all files in Documents"                            │
+  │ • "List my Downloads folder"                               │
+  │ • "Show files in workspace"                                │
+  └────────────────────────────────────────────────────────────┘
+  
+  ┌─ Search Files ─────────────────────────────────────────────┐
+  │ • "Find all Python files in Documents"                     │
+  │ • "Find PDF files in Downloads"                            │
+  │ • "Show me files larger than 10MB on Desktop"              │
+  │ • "Find files modified in the last week"                   │
+  └────────────────────────────────────────────────────────────┘
+  
+  ┌─ Read File Contents ───────────────────────────────────────┐
+  │ • "Show contents of readme.txt on Desktop"                 │
+  │ • "Display the first 20 lines of report.txt"               │
+  │ • "Count lines in myfile.py in Documents"                  │
+  └────────────────────────────────────────────────────────────┘
+  
+  ┌─ File Statistics ──────────────────────────────────────────┐
+  │ • "How many PDF files do I have in Documents?"             │
+  │ • "Show disk usage of Desktop folder"                      │
+  │ • "What's the total size of my Downloads?"                 │
+  └────────────────────────────────────────────────────────────┘
+  
+  ┌─ Write Operations (workspace only) ────────────────────────┐
+  │ • "Create a file called test.txt in workspace"             │
+  │ • "Make a folder called projects in workspace"             │
+  └────────────────────────────────────────────────────────────┘
 
-⚠️  SAFETY:
-  - All commands execute in isolated Docker container
-  - Dangerous operations are blocked automatically
-  - Destructive operations require confirmation
+⚠️  SAFETY NOTES:
+  • Desktop, Documents, Downloads are READ-ONLY (your real files are safe!)
+  • Write operations only work in /home/user/workspace
+  • Dangerous operations (rm -rf, etc.) are blocked
+  • All commands run in isolated Docker container
 
-📁 WORKSPACE:
-  - Files in ~/glsfs/data/workspace sync with Docker
-  - Commands run in /home/user inside Docker
-  - Use 'workspace' command to see contents
+📋 SPECIAL COMMANDS:
+  • 'workspace' - Show contents of all accessible directories
+  • 'help'      - Show this help message
+  • 'exit'      - Quit the program
         """
         print(help_text)
     
     def __del__(self):
         """Cleanup when system shuts down"""
         if hasattr(self, 'executor'):
-            self.executor.cleanup()
+            try:
+                self.executor.cleanup()
+            except:
+                pass
